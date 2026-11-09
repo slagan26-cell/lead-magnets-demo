@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Судный день кожаного мешка — Сканер автозаменяемости</title>
+  <style>
+    /* Базовый строгий ч/б стиль прототипа: Poka-Yoke и чистый контракт */
+    [hidden] { display: none !important; }
+    
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.45;
+      color: #000;
+      background: #fff;
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      border-bottom: 2px solid #000;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      border: 1px solid #000;
+      padding: 2px 6px;
+      letter-spacing: 0.5px;
+    }
+    
+    main {
+      flex: 1;
+    }
+    
+    section[data-screen] {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    h1 {
+      font-size: 20px;
+      line-height: 1.25;
+      font-weight: 800;
+    }
+    
+    h2 {
+      font-size: 17px;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+    
+    h3 {
+      font-size: 14px;
+      line-height: 1.35;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    
+    p {
+      font-size: 14px;
+      color: #111;
+    }
+    
+    .instruction {
+      font-size: 13px;
+      font-style: italic;
+      color: #333;
+      background: #f4f4f4;
+      padding: 8px 12px;
+      border-left: 3px solid #000;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      background: #000;
+      border: 1px solid #000;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .btn:disabled {
+      background: #eee;
+      color: #888;
+      border-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: #fff;
+      color: #000;
+      border: 1px solid #000;
+    }
+    
+    .btn-small {
+      min-height: 32px;
+      padding: 4px 10px;
+      font-size: 12px;
+      width: auto;
+    }
+    
+    .btn-back {
+      background: transparent;
+      border: none;
+      font-size: 13px;
+      color: #555;
+      cursor: pointer;
+      padding: 4px 0;
+      text-align: left;
+      width: auto;
+      text-decoration: underline;
+    }
+    
+    .options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .opt-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid #000;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.35;
+      font-family: inherit;
+      width: 100%;
+      min-height: 52px;
+    }
+    
+    .opt-card:hover {
+      background: #f0f0f0;
+    }
+    
+    .opt-card.selected {
+      background: #000;
+      color: #fff;
+    }
+    
+    .indicator-box {
+      border: 2px solid #000;
+      padding: 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .indicator-val {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+    
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 8px 0;
+    }
+    
+    .metrics-table th, .metrics-table td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    .metrics-table th {
+      background: #f0f0f0;
+    }
+    
+    .diagram-box {
+      border: 1px dashed #000;
+      padding: 12px;
+      background: #fafafa;
+      font-size: 12px;
+      font-family: monospace;
+      white-space: pre-line;
+      line-height: 1.4;
+    }
+    
+    .toast {
+      padding: 8px 12px;
+      background: #000;
+      color: #fff;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 8px;
+    }
+    
+    footer {
+      border-top: 1px solid #ccc;
+      padding-top: 12px;
+      margin-top: 24px;
+      font-size: 11px;
+      color: #666;
+      line-height: 1.4;
+    }
+    
+    #debug {
+      margin-top: 20px;
+      padding: 10px;
+      background: #eee;
+      border: 1px solid #aaa;
+      font-size: 11px;
+      font-family: monospace;
+    }
+    
+    #play-kit-panel {
+      margin-top: 20px;
+      padding: 12px;
+      border: 1px solid #000;
+      background: #fbfbfb;
+      font-size: 12px;
+    }
+    
+    #play-unclear-btn {
+      font-size: 11px;
+      background: #fff;
+      border: 1px solid #000;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <span class="badge">Кибер-Сканер v1.0</span>
+    </div>
+    <div id="play-controls" hidden>
+      <button type="button" id="play-unclear-btn" data-testid="play-unclear">Здесь непонятно</button>
+    </div>
+  </header>
+
+  <div id="play-toast" class="toast" hidden>Отметка сохранена в журнале</div>
+
+  <main>
+    <!-- SCR-01: Вход и выбор роли -->
+    <section data-screen="SCR-01">
+      <h1>Скайнет не будет взрывать города. Он просто заберет клиентов у тех, кто делает маркетинг руками</h1>
+      <p>Экспресс-сканер автозаменяемости рутины. За 2 минуты проверим 6 реальных ситуаций твоего маркетинга и покажем, какую часть твоих задач скрипты уже выполняют за 40 секунд.</p>
+      
+      <div class="options-group" style="margin-top: 8px;">
+        <button type="button" class="opt-card" data-testid="SCR-01-role-spec" onclick="proto.selectRole('spec')">
+          <span><strong>Кожаный спец:</strong> делаю контент, рекламу и воронки руками</span>
+        </button>
+        <button type="button" class="opt-card" data-testid="SCR-01-role-boss" onclick="proto.selectRole('boss')">
+          <span><strong>Кожаный босс:</strong> руковожу бизнесом, плачу подрядчикам и жду лидов</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SCR-02: Блок ситуаций 1–3 -->
+    <section data-screen="SCR-02" hidden>
+      <button type="button" class="btn-back" data-testid="SCR-02-back" onclick="proto.backStep2()">← Назад</button>
+      <h2>Блок 1 из 2: Создание смыслов и упаковка</h2>
+      <div class="instruction">Выбирай, как бывает на самом деле, а не как «надо бы»</div>
+
+      <!-- Ситуация 1: Контент -->
+      <div id="box-s1" class="options-group">
+        <h3 id="h-s1">Ситуация 1 (Контент)</h3>
+        <button type="button" class="opt-card" id="btn-s1-0" data-testid="SCR-02-s1-opt-0" onclick="proto.chooseAndAdvance('s1_content', 0)">1</button>
+        <button type="button" class="opt-card" id="btn-s1-1" data-testid="SCR-02-s1-opt-1" onclick="proto.chooseAndAdvance('s1_content', 1)">2</button>
+        <button type="button" class="opt-card" id="btn-s1-2" data-testid="SCR-02-s1-opt-2" onclick="proto.chooseAndAdvance('s1_content', 2)">3</button>
+        <button type="button" class="opt-card" id="btn-s1-3" data-testid="SCR-02-s1-opt-3" onclick="proto.chooseAndAdvance('s1_content', 3)">4</button>
+      </div>
+
+      <!-- Ситуация 2: Рилсы -->
+      <div id="box-s2" class="options-group" hidden>
+        <h3 id="h-s2">Ситуация 2 (Рилсы)</h3>
+        <button type="button" class="opt-card" id="btn-s2-0" data-testid="SCR-02-s2-opt-0" onclick="proto.chooseAndAdvance('s2_video', 0)">1</button>
+        <button type="button" class="opt-card" id="btn-s2-1" data-testid="SCR-02-s2-opt-1" onclick="proto.chooseAndAdvance('s2_video', 1)">2</button>
+        <button type="button" class="opt-card" id="btn-s2-2" data-testid="SCR-02-s2-opt-2" onclick="proto.chooseAndAdvance('s2_video', 2)">3</button>
+        <button type="button" class="opt-card" id="btn-s2-3" data-testid="SCR-02-s2-opt-3" onclick="proto.chooseAndAdvance('s2_video', 3)">4</button>
+      </div>
+
+      <!-- Ситуация 3: Создание лендингов -->
+      <div id="box-s3" class="options-group" hidden>
+        <h3 id="h-s3">Ситуация 3 (Лендинги)</h3>
+        <button type="button" class="opt-card" id="btn-s3-0" data-testid="SCR-02-s3-opt-0" onclick="proto.chooseAndAdvance('s3_landing', 0)">1</button>
+        <button type="button" class="opt-card" id="btn-s3-1" data-testid="SCR-02-s3-opt-1" onclick="proto.chooseAndAdvance('s3_landing', 1)">2</button>
+        <button type="button" class="opt-card" id="btn-s3-2" data-testid="SCR-02-s3-opt-2" onclick="proto.chooseAndAdvance('s3_landing', 2)">3</button>
+        <button type="button" class="opt-card" id="btn-s3-3" data-testid="SCR-02-s3-opt-3" onclick="proto.chooseAndAdvance('s3_landing', 3)">4</button>
+      </div>
+
+      <button type="button" class="btn" id="btn-scr02-next" data-testid="SCR-02-next" hidden onclick="proto.go('SCR-03')">
+        Дальше: аудит лидов и софта →
+      </button>
+    </section>
+
+    <!-- SCR-03: Блок ситуаций 4–6 -->
+    <section data-screen="SCR-03" hidden>
+      <button type="button" class="btn-back" data-testid="SCR-03-back" onclick="proto.backStep3()">← Назад</button>
+      <h2>Блок 2 из 2: Лидогенерация и рабочий стек</h2>
+      <div class="instruction">Отвечай честно: сканер видит имитацию бурной деятельности</div>
+
+      <!-- Ситуация 4: Лиды -->
+      <div id="box-s4" class="options-group">
+        <h3 id="h-s4">Ситуация 4 (Лиды)</h3>
+        <button type="button" class="opt-card" id="btn-s4-0" data-testid="SCR-03-s4-opt-0" onclick="proto.chooseAndAdvance('s4_leads', 0)">1</button>
+        <button type="button" class="opt-card" id="btn-s4-1" data-testid="SCR-03-s4-opt-1" onclick="proto.chooseAndAdvance('s4_leads', 1)">2</button>
+        <button type="button" class="opt-card" id="btn-s4-2" data-testid="SCR-03-s4-opt-2" onclick="proto.chooseAndAdvance('s4_leads', 2)">3</button>
+        <button type="button" class="opt-card" id="btn-s4-3" data-testid="SCR-03-s4-opt-3" onclick="proto.chooseAndAdvance('s4_leads', 3)">4</button>
+      </div>
+
+      <!-- Ситуация 5: Память и база знаний -->
+      <div id="box-s5" class="options-group" hidden>
+        <h3 id="h-s5">Ситуация 5 (Память)</h3>
+        <button type="button" class="opt-card" id="btn-s5-0" data-testid="SCR-03-s5-opt-0" onclick="proto.chooseAndAdvance('s5_memory', 0)">1</button>
+        <button type="button" class="opt-card" id="btn-s5-1" data-testid="SCR-03-s5-opt-1" onclick="proto.chooseAndAdvance('s5_memory', 1)">2</button>
+        <button type="button" class="opt-card" id="btn-s5-2" data-testid="SCR-03-s5-opt-2" onclick="proto.chooseAndAdvance('s5_memory', 2)">3</button>
+        <button type="button" class="opt-card" id="btn-s5-3" data-testid="SCR-03-s5-opt-3" onclick="proto.chooseAndAdvance('s5_memory', 3)">4</button>
+      </div>
+
+      <!-- Ситуация 6: Софт и стек -->
+      <div id="box-s6" class="options-group" hidden>
+        <h3 id="h-s6">Ситуация 6 (Стек)</h3>
+        <button type="button" class="opt-card" id="btn-s6-0" data-testid="SCR-03-s6-opt-0" onclick="proto.chooseAndAdvance('s6_stack', 0)">1</button>
+        <button type="button" class="opt-card" id="btn-s6-1" data-testid="SCR-03-s6-opt-1" onclick="proto.chooseAndAdvance('s6_stack', 1)">2</button>
+        <button type="button" class="opt-card" id="btn-s6-2" data-testid="SCR-03-s6-opt-2" onclick="proto.chooseAndAdvance('s6_stack', 2)">3</button>
+        <button type="button" class="opt-card" id="btn-s6-3" data-testid="SCR-03-s6-opt-3" onclick="proto.chooseAndAdvance('s6_stack', 3)">4</button>
+      </div>
+
+      <button type="button" class="btn" id="btn-scr03-submit" data-testid="SCR-03-submit" hidden onclick="proto.go('SCR-04')">
+        Запустить сканер Скайнета
+      </button>
+    </section>
+
+    <!-- SCR-04: Дисплей Сканера (Результат) -->
+    <section data-screen="SCR-04" hidden>
+      <button type="button" class="btn-back" data-testid="SCR-04-back" onclick="proto.go('SCR-03')">← Изменить ответы</button>
+      
+      <div id="scan-results" style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="indicator-box">
+          <div style="font-size: 12px; text-transform: uppercase; font-weight: 700;">Индекс автозаменяемости рутины:</div>
+          <div class="indicator-val" id="res-auto-index">88%</div>
+          <div id="res-profile-title" style="font-size: 13px; font-weight: 700; color: #222;">Критическая перегрузка рутиной</div>
+        </div>
+
+        <table class="metrics-table">
+          <tr>
+            <th>Показатель</th>
+            <th>Человек (твоя рутина)</th>
+            <th>Скрипт на ПК</th>
+          </tr>
+          <tr>
+            <td>Скорость процесса</td>
+            <td id="res-human-hours">~16.5 часов/нед</td>
+            <td>42 секунды</td>
+          </tr>
+          <tr>
+            <td>Финансовые потери</td>
+            <td id="res-money-lost" colspan="2">49 500 ₽/мес недополученного дохода</td>
+          </tr>
+        </table>
+
+        <button type="button" class="btn" data-testid="SCR-04-next" onclick="proto.go('SCR-05')">
+          Посмотреть архитектуру связки под мою нишу →
+        </button>
+      </div>
+    </section>
+
+    <!-- SCR-05: Персональный артефакт связки -->
+    <section data-screen="SCR-05" hidden>
+      <button type="button" class="btn-back" data-testid="SCR-05-back" onclick="proto.go('SCR-04')">← Назад к сканеру</button>
+      <h2>Твоя персональная связка под главное узкое горло</h2>
+      
+      <div style="border: 2px solid #000; padding: 14px; background: #fff;">
+        <h3 id="res-top-process" style="font-size: 15px; margin-bottom: 8px;">Автономный контент-завод на ПК (Voice DNA)</h3>
+        <p style="font-size: 13px; margin-bottom: 12px;">Архитектура движения данных, которая забирает рутину и выдает результат за 20 минут:</p>
+        
+        <div class="diagram-box" id="res-diagram">
+[ВХОД]: ТЗ на неделю или аудиозапись на 3 минуты
+   │
+   ▼
+[ЛОКАЛЬНЫЙ СКРИПТ НА ПК]: Автоматическая транскрибация Whisper
+   │
+   ▼
+[ЯДРО ПАМЯТИ]: База знаний + стилистический паспорт Voice DNA
+   │
+   ▼
+[ВЫХОД]: 5 готовых постов со структурой и прогревом за 42 секунды
+        </div>
+      </div>
+
+      <p style="font-size: 13px; color: #333;">В закрытом клубе AiTeam мы ставим эту связку тебе на компьютер за первую неделю декабря.</p>
+
+      <button type="button" class="btn" data-testid="SCR-05-bridge" onclick="proto.go('SCR-06')">
+        Внедрить связку и зафиксировать цену 1 900 ₽ →
+      </button>
+    </section>
+
+    <!-- SCR-06: Мостик в закрытый клуб AiTeam (data-terminal) -->
+    <section data-screen="SCR-06" data-terminal hidden>
+      <button type="button" class="btn-back" data-testid="SCR-06-back" onclick="proto.go('SCR-05')">← Назад к связке</button>
+      <h2>Вход в закрытый клуб AiTeam 🚀</h2>
+      
+      <div style="background: #f4f4f4; border: 1px solid #000; padding: 12px;">
+        <p style="font-size: 13px; margin-bottom: 8px;">Мы не будем продавать 40 часов лекций или учить писать промпты в браузере.</p>
+        <p style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">Что внутри клуба:</p>
+        <ul style="font-size: 13px; margin-left: 20px; line-height: 1.4;">
+          <li>Установка суверенного воркспейса на твой ПК за первую неделю декабря;</li>
+          <li>1–2 живых Zoom-разбора твоих воронок в месяц;</li>
+          <li>Еженедельные мастермайнды на 4-5 человек и закрытый чат практиков.</li>
+        </ul>
+      </div>
+
+      <div style="border: 2px solid #000; padding: 12px; text-align: center;">
+        <div style="font-size: 12px; color: #777; text-decoration: line-through;">Стандартная цена: 3 900 ₽/мес</div>
+        <div style="font-size: 20px; font-weight: 800; margin: 4px 0;">Твоя клубная цена: 1 900 ₽/мес</div>
+        <div style="font-size: 11px; color: #333;">Фиксация навсегда при сохранении подписки. Старт: 1 декабря 2026.</div>
+      </div>
+
+      <button type="button" class="btn" data-testid="SCR-06-cta" onclick="proto.submitCta()">
+        Зафиксировать цену 1 900 ₽ и забрать связку в боте
+      </button>
+
+      <div id="cta-modal" class="toast" hidden>
+        [ЗАГЛУШКА]: Здесь открывается переход в Telegram-бот @aitouchrobots для фиксации цены и получения связки.
+      </div>
+    </section>
+  </main>
+
+  <!-- Блок плейтеста (?play=1) -->
+  <div id="play-kit-panel" hidden>
+    <strong>Журнал тестирования</strong>
+    <p style="font-size: 11px; color: #555; margin: 4px 0 8px;">Скопируйте текст ниже и отправьте автору со своими ответами:</p>
+    <textarea id="play-log-text" style="width: 100%; height: 80px; font-family: monospace; font-size: 10px; padding: 4px;" readonly></textarea>
+    <button type="button" class="btn btn-secondary btn-small" id="play-copy-log" data-testid="play-copy-log" onclick="proto.copyPlayLog()">Скопировать журнал</button>
+  </div>
+
+  <footer>
+    <p>Расчет носит ориентировочный характер на основе математической модели экспертного конвейера. Реальная экономия зависит от ниши и глубины внедрения локального воркспейса.</p>
+  </footer>
+
+  <!-- Панель отладки (?debug=1) -->
+  <div id="debug" hidden>
+    <strong>[DEBUG PANEL]</strong>
+    <div id="debug-screen">Screen: SCR-01</div>
+    <div id="debug-vars">Vars: {}</div>
+    <div id="debug-log">Log: []</div>
+    <div style="margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap;">
+      <button type="button" class="btn btn-small btn-secondary" onclick="proto.goto('SCR-01')">SCR-01</button>
+      <button type="button" class="btn btn-small btn-secondary" onclick="proto.goto('SCR-02')">SCR-02</button>
+      <button type="button" class="btn btn-small btn-secondary" onclick="proto.goto('SCR-03')">SCR-03</button>
+      <button type="button" class="btn btn-small btn-secondary" onclick="proto.goto('SCR-04')">SCR-04</button>
+      <button type="button" class="btn btn-small btn-secondary" onclick="proto.goto('SCR-05')">SCR-05</button>
+      <button type="button" class="btn btn-small btn-secondary" onclick="proto.goto('SCR-06')">SCR-06</button>
+      <button type="button" class="btn btn-small btn-secondary" onclick="proto.reset()">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Вопросы и варианты ситуаций с разделением по ролям: СПЕЦ vs БОСС
+      const DIALOGS = {
+        spec: {
+          s1: {
+            title: 'Ситуация 1 (Контент): Нужно выдать 5 постов и прогрев на неделю. Как это выглядит?',
+            opts: [
+              '1. Вымучиваю белый лист по 2-3 часа руками',
+              '2. ChatGPT выдает унылое «в современном мире...», переписываю сам',
+              '3. Плачу копирайтеру 30-50к: срывает дедлайны и льет воду',
+              '4. Наговариваю голосовое на 3 мин, скрипт на ПК выдает 5 постов с Voice DNA'
+            ]
+          },
+          s2: {
+            title: 'Ситуация 2 (Рилсы): Алгоритмы требуют регулярные рилсы. Что происходит у тебя на этой неделе?',
+            opts: [
+              '1. В закладках 400 идей, снято 0',
+              '2. Снимаю говорящую голову 2 часа, потом до ночи клею субтитры',
+              '3. Плачу монтажеру за ролик, спорим из-за правок и шрифтов',
+              '4. Пайплайн: тренды -> хук -> раскадровка в нейросети -> черновик за 15 мин'
+            ]
+          },
+          s3: {
+            title: 'Ситуация 3 (Лендинги): Нужно быстро собрать посадочную страницу под новый оффер или запуск. Как решаешь?',
+            opts: [
+              '1. Тяну неделями: нет времени или агентство просит 40-80к',
+              '2. Собираю сам на Tilda: вою ночами над адаптацией под мобилки',
+              '3. Прошу ChatGPT написать HTML: получаю кривую верстку из 90-х',
+              '4. Вайб-кодинг: агент на ПК собирает адаптивный лендинг или TMA за 20 мин'
+            ]
+          },
+          s4: {
+            title: 'Ситуация 4 (Лиды): Потенциальный клиент пишет в директ или бот в 23:00: «Сколько стоит?». Что происходит?',
+            opts: [
+              '1. Отвечу утром (к утру клиент остыл и ушел к конкурентам)',
+              '2. Набираю ответ в полусне руками с телефона',
+              '3. Менеджер отвечает по шаблонному скрипту с конверсией 3%',
+              '4. ИИ-агент за 30 сек квалифицирует лид, отвечает на возражения и пишет в CRM'
+            ]
+          },
+          s5: {
+            title: 'Ситуация 5 (Память): Когда ты открываешь нейросеть под рабочий проект...',
+            opts: [
+              '1. Каждый раз заново объясняю, кто я, какой у меня бизнес и целевая аудитория',
+              '2. Копирую простыню промпта из заметок на 20 экранов',
+              '3. Скидываю ссылку или PDF и надеюсь, что модель разберется',
+              '4. Локальная база знаний на ПК: модель помнит фактуру и стиль бренда'
+            ]
+          },
+          s6: {
+            title: 'Ситуация 6 (Стек): Как физически устроен твой рабочий софт?',
+            opts: [
+              '1. Бесплатный ChatGPT в браузере, который висит',
+              '2. 3 платных подписки в долларах через крипту + отваливающийся VPN',
+              '3. Агрегатор ботов в Telegram за 990 ₽ с урезанными моделями',
+              '4. Суверенный локальный воркспейс на ПК, работающий с API напрямую'
+            ]
+          }
+        },
+        boss: {
+          s1: {
+            title: 'Ситуация 1 (Контент): Нужно регулярно вести канал и выкладывать прогревы. Как это устроено?',
+            opts: [
+              '1. В канале тишина: нет времени писать самому, а поручить некому',
+              '2. Маркетолог кормит завтраками, а тексты из ChatGPT звучат как жижа',
+              '3. Плачу агентству/копирайтеру 40-70к: льют воду, приходится переписывать',
+              '4. Контент-завод на ПК: наговариваю 3 мин мыслей, скрипт сам выдает посты в моем стиле'
+            ]
+          },
+          s2: {
+            title: 'Ситуация 2 (Рилсы): Нужен регулярный видео-трафик (Reels/Shorts). Какова реальность?',
+            opts: [
+              '1. Видео не снимаем: на продакшн нет времени, сливать бюджет боюсь',
+              '2. Рилсмейкеры просят 80-150к, приносят кринжовые идеи не про продажи',
+              '3. Записали ролики задорого, монтажер пропал, лидов с видео ноль',
+              '4. Налажен пайплайн: нейросеть берет тренды ниши, ассистент собирает ролики за копейки'
+            ]
+          },
+          s3: {
+            title: 'Ситуация 3 (Лендинги): Нужно быстро протестировать новый оффер или страницу под запуск. Что происходит?',
+            opts: [
+              '1. Запуск откладывается на месяц: студии просят от 80к и тянут сроки',
+              '2. Верстальщик на Tilda тянет резину, за каждую правку кнопки требует доплату',
+              '3. Таргетолог винит страницу, верстальщик винит таргет — бюджет слит, лидов нет',
+              '4. Вайб-кодинг: оператор собирает работающий Telegram WebApp или лендинг за 20 мин'
+            ]
+          },
+          s4: {
+            title: 'Ситуация 4 (Лиды): Потенциальный клиент оставляет заявку или пишет в 23:00. Что с ней происходит?',
+            opts: [
+              '1. Лид сгорает: ночью и на выходных никто не отвечает, клиент покупает у других',
+              '2. Сам сижу в переписках ночами вместо стратегических задач бизнеса',
+              '3. Менеджеры на окладе вяло отвечают по скрипту и сливают рекламный бюджет',
+              '4. ИИ-ассистент квалифицирует заявку за 30 сек, отвечает по фактуре и кладет в CRM'
+            ]
+          },
+          s5: {
+            title: 'Ситуация 5 (Память): Как хранится экспертиза и контекст твоего бизнеса?',
+            opts: [
+              '1. Всё в моей голове: каждый новый маркетолог или подрядчик въезжает по месяцу за мой счет',
+              '2. Написали регламенты в Notion на 50 страниц — их никто не читает, все дергают меня',
+              '3. Подрядчики используют общие шаблоны, не понимая специфики моего продукта',
+              '4. Локальная база знаний на ПК: ИИ знает кейсы и тарифы лучше любого стажера'
+            ]
+          },
+          s6: {
+            title: 'Ситуация 6 (Стек): Как компания физически оплачивает и использует нейросети?',
+            opts: [
+              '1. Никак системно: каждый сотрудник тыкает бесплатный ChatGPT и лепит отсебятину',
+              '2. Оплачиваем зоопарк зарубежных подписок с корпоративных карт через отваливающийся VPN',
+              '3. Покупаем дешевых Telegram-ботов с урезанным функционалом, базы клиентов уходят третьим лицам',
+              '4. Суверенный корпоративный воркспейс: защищенный локальный контур на ПК, работающий по прямым API'
+            ]
+          }
+        }
+      };
+
+      const SITUATION_HOURS = {
+        s1_content: [5.0, 3.5, 1.5, 0.3],
+        s2_video:   [6.0, 4.0, 2.0, 0.5],
+        s3_landing: [4.0, 3.0, 2.0, 0.4],
+        s4_leads:   [4.5, 3.0, 1.5, 0.2],
+        s5_memory:  [2.5, 1.5, 1.0, 0.1],
+        s6_stack:   [2.0, 1.5, 1.0, 0.0]
+      };
+
+      const AGENCY_COSTS = {
+        s1_content: [0, 0, 35000, 0],
+        s2_video:   [0, 0, 40000, 0],
+        s3_landing: [0, 0, 45000, 0],
+        s4_leads:   [0, 0, 25000, 0],
+        s5_memory:  [0, 0, 15000, 0],
+        s6_stack:   [0, 6000, 15000, 0]
+      };
+
+      const NEXT_STEPS = {
+        s1_content: 'NEXT-01 «Автономный контент-завод на ПК (Voice DNA)»',
+        s2_video:   'NEXT-02 «Пайплайн рилс и видео без монтажера»',
+        s3_landing: 'NEXT-03 «Вайб-кодинг лендингов и WebApp за 20 минут»',
+        s4_leads:   'NEXT-04 «Чат-бот квалификации и продаж без кода»'
+      };
+
+      const DIAGRAMS = {
+        s1_content: `[ВХОД]: ТЗ на неделю или аудиозапись на 3 минуты\n   │\n   ▼\n[ЛОКАЛЬНЫЙ СКРИПТ НА ПК]: Автоматическая транскрибация Whisper\n   │\n   ▼\n[ЯДРО ПАМЯТИ]: База знаний + стилистический паспорт Voice DNA\n   │\n   ▼\n[ВЫХОД]: 5 готовых постов со структурой и прогревом за 42 секунды`,
+        s2_video:   `[ВХОД]: Тема ролика или ссылка на тренд\n   │\n   ▼\n[ПАРСЕР ИИ]: Выделение хука и вирального триггера\n   │\n   ▼\n[РАСКАДРОВКА]: Генерация покадрового сценария и субтитров\n   │\n   ▼\n[ВЫХОД]: Готовый черновик видео для публикации за 15 минут`,
+        s3_landing: `[ВХОД]: Описание продукта, оффер и тарифы\n   │\n   ▼\n[ВАЙБ-КОДИНГ НА ПК]: Локальный агент собирает верстку TMA\n   │\n   ▼\n[АДАПТАЦИЯ]: Автопроверка контраста и 320 px сетки\n   │\n   ▼\n[ВЫХОД]: Работающий Telegram WebApp / лендинг за 20 минут`,
+        s4_leads:   `[ВХОД]: Сообщение лида в 23:00 «Сколько стоит?»\n   │\n   ▼\n[ДИАЛОГОВЫЙ АГЕНТ]: Квалификация по 3 критериям за 30 сек\n   │\n   ▼\n[ОТВЕТ НА ВОЗРАЖЕНИЯ]: На основе базы знаний бренда\n   │\n   ▼\n[ВЫХОД]: Горячий лид передан в CRM, утром менеджер закрывает сделку`
+      };
+
+      const startTime = Date.now();
+
+      // Состояние прототипа
+      const S = {
+        screen: 'SCR-01',
+        history: ['SCR-01'],
+        substep: { scr02: 1, scr03: 1 },
+        vars: {
+          role: null,
+          s1_content: null,
+          s2_video: null,
+          s3_landing: null,
+          s4_leads: null,
+          s5_memory: null,
+          s6_stack: null
+        },
+        log: []
+      };
+
+      function logEvent(event) {
+        const sec = Math.floor((Date.now() - startTime) / 1000);
+        const entry = `${sec} · ${S.screen} · ${event}`;
+        S.log.push(entry);
+        updatePlayLog();
+        if (debugMode) updateDebug();
+      }
+
+      function compute(answers, inputs) {
+        const r = (answers && answers['SCR-01']) || S.vars.role || 'spec';
+        const s1 = (answers && answers['s1_content'] !== undefined) ? Number(answers['s1_content']) : (S.vars.s1_content ?? 0);
+        const s2 = (answers && answers['s2_video'] !== undefined) ? Number(answers['s2_video']) : (S.vars.s2_video ?? 0);
+        const s3 = (answers && answers['s3_landing'] !== undefined) ? Number(answers['s3_landing']) : (S.vars.s3_landing ?? 0);
+        const s4 = (answers && answers['s4_leads'] !== undefined) ? Number(answers['s4_leads']) : (S.vars.s4_leads ?? 0);
+        const s5 = (answers && answers['s5_memory'] !== undefined) ? Number(answers['s5_memory']) : (S.vars.s5_memory ?? 0);
+        const s6 = (answers && answers['s6_stack'] !== undefined) ? Number(answers['s6_stack']) : (S.vars.s6_stack ?? 0);
+
+        const scores = [s1, s2, s3, s4, s5, s6];
+        const keys = ['s1_content', 's2_video', 's3_landing', 's4_leads', 's5_memory', 's6_stack'];
+
+        let totalHours = 0.0;
+        let totalMoney = 0;
+
+        keys.forEach((k, idx) => {
+          totalHours += SITUATION_HOURS[k][scores[idx]];
+          totalMoney += AGENCY_COSTS[k][scores[idx]];
+        });
+
+        const userPoints = scores.reduce((a, b) => a + b, 0);
+        let autoIndex = Math.floor(88 - (userPoints / 18) * 70);
+        autoIndex = Math.min(Math.max(autoIndex, 18), 88);
+
+        let moneyLost = 0;
+        if (r === 'spec') {
+          moneyLost = Math.floor(totalHours * 4 * 750);
+        } else {
+          moneyLost = Math.floor(totalMoney + (totalHours * 4 * 1200));
+        }
+
+        let profile = 'PROF-01';
+        let profileTitle = 'Критическая перегрузка рутиной';
+        if (autoIndex < 45) {
+          profile = 'PROF-03';
+          profileTitle = 'Системный практик';
+        } else if (autoIndex < 70) {
+          profile = 'PROF-02';
+          profileTitle = 'Лоскутная автоматизация';
+        }
+
+        const candidates = [
+          { k: 's1_content', val: s1, text: NEXT_STEPS.s1_content },
+          { k: 's2_video', val: s2, text: NEXT_STEPS.s2_video },
+          { k: 's3_landing', val: s3, text: NEXT_STEPS.s3_landing },
+          { k: 's4_leads', val: s4, text: NEXT_STEPS.s4_leads }
+        ];
+
+        let minVal = 999;
+        let topCandidate = candidates[0];
+        candidates.forEach(c => {
+          if (c.val < minVal) {
+            minVal = c.val;
+            topCandidate = c;
+          }
+        });
+
+        return {
+          scales: {
+            auto_index: autoIndex,
+            hours_weekly: Math.round(totalHours * 10) / 10,
+            money_monthly: moneyLost
+          },
+          outcome: profile,
+          shown: autoIndex,
+          next: topCandidate.text,
+          profileTitle: profileTitle,
+          topKey: topCandidate.k,
+          role: r
+        };
+      }
+
+      function updateDialogTexts() {
+        const role = S.vars.role || 'spec';
+        const d = DIALOGS[role] || DIALOGS.spec;
+
+        ['s1', 's2', 's3', 's4', 's5', 's6'].forEach(sKey => {
+          const hEl = document.getElementById(`h-${sKey}`);
+          if (hEl) hEl.innerText = d[sKey].title;
+          for (let v = 0; v < 4; v++) {
+            const btn = document.getElementById(`btn-${sKey}-${v}`);
+            if (btn) btn.innerText = d[sKey].opts[v];
+          }
+        });
+      }
+
+      function render() {
+        document.querySelectorAll('section[data-screen]').forEach(el => {
+          el.hidden = (el.dataset.screen !== S.screen);
+        });
+
+        updateDialogTexts();
+
+        // Подсветка роли на SCR-01 (если вернулись назад)
+        if (S.screen === 'SCR-01') {
+          const btnSpec = document.querySelector('[data-testid="SCR-01-role-spec"]');
+          const btnBoss = document.querySelector('[data-testid="SCR-01-role-boss"]');
+          if (btnSpec) btnSpec.classList.toggle('selected', S.vars.role === 'spec');
+          if (btnBoss) btnBoss.classList.toggle('selected', S.vars.role === 'boss');
+        }
+
+        // Показ активного вопроса на SCR-02
+        if (S.screen === 'SCR-02') {
+          const step = S.substep.scr02;
+          document.getElementById('box-s1').hidden = (step !== 1);
+          document.getElementById('box-s2').hidden = (step !== 2);
+          document.getElementById('box-s3').hidden = (step !== 3);
+          document.getElementById('btn-scr02-next').hidden = (step !== 4);
+        }
+
+        // Показ активного вопроса на SCR-03
+        if (S.screen === 'SCR-03') {
+          const step = S.substep.scr03;
+          document.getElementById('box-s4').hidden = (step !== 1);
+          document.getElementById('box-s5').hidden = (step !== 2);
+          document.getElementById('box-s6').hidden = (step !== 3);
+          document.getElementById('btn-scr03-submit').hidden = (step !== 4);
+        }
+
+        // Если экран SCR-04, отобразить расчет
+        if (S.screen === 'SCR-04') {
+          const res = compute();
+          const autoIndexEl = document.getElementById('res-auto-index');
+          if (autoIndexEl) autoIndexEl.innerText = res.shown + '%';
+
+          const profEl = document.getElementById('res-profile-title');
+          if (profEl) profEl.innerText = `${res.outcome} «${res.profileTitle}»`;
+
+          const hoursEl = document.getElementById('res-human-hours');
+          if (hoursEl) hoursEl.innerText = `~${res.scales.hours_weekly} часов/нед`;
+
+          const moneyEl = document.getElementById('res-money-lost');
+          if (moneyEl) {
+            const formattedMoney = res.scales.money_monthly.toLocaleString('ru-RU');
+            if (res.role === 'spec') {
+              moneyEl.innerText = `${formattedMoney} ₽/мес недополученного дохода`;
+            } else {
+              moneyEl.innerText = `${formattedMoney} ₽/мес слитого ФОТ на рутину`;
+            }
+          }
+        }
+
+        // Если экран SCR-05, показать персональный артефакт
+        if (S.screen === 'SCR-05') {
+          const res = compute();
+          const topProcessEl = document.getElementById('res-top-process');
+          if (topProcessEl) topProcessEl.innerText = res.next;
+
+          const diagEl = document.getElementById('res-diagram');
+          if (diagEl) diagEl.innerText = DIAGRAMS[res.topKey] || DIAGRAMS.s1_content;
+        }
+
+        if (debugMode) updateDebug();
+        updatePlayLog();
+      }
+
+      function go(screenId) {
+        S.screen = screenId;
+        if (S.history[S.history.length - 1] !== screenId) {
+          S.history.push(screenId);
+        }
+        if (screenId === 'SCR-02' && S.substep.scr02 > 3) S.substep.scr02 = 1;
+        if (screenId === 'SCR-03' && S.substep.scr03 > 3) S.substep.scr03 = 1;
+        logEvent(`вход`);
+        render();
+        window.scrollTo(0, 0);
+      }
+
+      // Live playtest & debug
+      const urlParams = new URLSearchParams(window.location.search);
+      const playMode = urlParams.get('play') === '1';
+      const debugMode = urlParams.get('debug') === '1';
+
+      if (playMode) {
+        document.getElementById('play-controls').hidden = false;
+        document.getElementById('play-kit-panel').hidden = false;
+        document.getElementById('play-unclear-btn').onclick = function() {
+          logEvent('непонятно');
+          const toast = document.getElementById('play-toast');
+          toast.hidden = false;
+          setTimeout(() => { toast.hidden = true; }, 2000);
+        };
+      }
+
+      if (debugMode) {
+        document.getElementById('debug').hidden = false;
+      }
+
+      function updatePlayLog() {
+        const txt = document.getElementById('play-log-text');
+        if (txt) {
+          txt.value = 'журнал v1\n' + S.log.join('\n');
+        }
+      }
+
+      function updateDebug() {
+        const dScr = document.getElementById('debug-screen');
+        const dVars = document.getElementById('debug-vars');
+        const dLog = document.getElementById('debug-log');
+        if (dScr) dScr.innerText = 'Screen: ' + S.screen;
+        if (dVars) dVars.innerText = 'Vars: ' + JSON.stringify(S.vars);
+        if (dLog) dLog.innerText = 'Log events: ' + S.log.length;
+      }
+
+      // API прототипа
+      window.proto = {
+        state: () => JSON.parse(JSON.stringify(S)),
+        log: () => [...S.log],
+        goto: (id) => go(id),
+        set: (k, v) => {
+          S.vars[k] = v;
+          logEvent(`ввод: ${k}=${v}`);
+          render();
+        },
+        reset: () => {
+          S.screen = 'SCR-01';
+          S.history = ['SCR-01'];
+          S.substep = { scr02: 1, scr03: 1 };
+          S.vars = { role: null, s1_content: null, s2_video: null, s3_landing: null, s4_leads: null, s5_memory: null, s6_stack: null };
+          S.log = [];
+          logEvent('сброс');
+          render();
+        },
+        compute: (answers, inputs) => compute(answers, inputs),
+        load: (answers, inputs) => {
+          if (answers) {
+            if (answers['SCR-01']) S.vars.role = answers['SCR-01'];
+            if (answers['s1_content'] !== undefined) S.vars.s1_content = answers['s1_content'];
+            if (answers['s2_video'] !== undefined) S.vars.s2_video = answers['s2_video'];
+            if (answers['s3_landing'] !== undefined) S.vars.s3_landing = answers['s3_landing'];
+            if (answers['s4_leads'] !== undefined) S.vars.s4_leads = answers['s4_leads'];
+            if (answers['s5_memory'] !== undefined) S.vars.s5_memory = answers['s5_memory'];
+            if (answers['s6_stack'] !== undefined) S.vars.s6_stack = answers['s6_stack'];
+          }
+          go('SCR-04');
+        },
+        selectRole: (role) => {
+          S.vars.role = role;
+          logEvent(`кнопка: Роль ${role === 'spec' ? 'Спец' : 'Босс'}`);
+          S.substep.scr02 = 1;
+          go('SCR-02');
+        },
+        chooseAndAdvance: (key, val) => {
+          S.vars[key] = val;
+          logEvent(`выбор: ${key}=${val}`);
+          if (key === 's1_content') S.substep.scr02 = 2;
+          else if (key === 's2_video') S.substep.scr02 = 3;
+          else if (key === 's3_landing') { S.substep.scr02 = 4; go('SCR-03'); return; }
+          else if (key === 's4_leads') S.substep.scr03 = 2;
+          else if (key === 's5_memory') S.substep.scr03 = 3;
+          else if (key === 's6_stack') { S.substep.scr03 = 4; go('SCR-04'); return; }
+          render();
+        },
+        backStep2: () => {
+          if (S.substep.scr02 > 1) {
+            S.substep.scr02--;
+            render();
+          } else {
+            go('SCR-01');
+          }
+        },
+        backStep3: () => {
+          if (S.substep.scr03 > 1) {
+            S.substep.scr03--;
+            render();
+          } else {
+            S.substep.scr02 = 3;
+            go('SCR-02');
+          }
+        },
+        submitCta: () => {
+          logEvent('кнопка: Зафиксировать цену 1 900 ₽');
+          const modal = document.getElementById('cta-modal');
+          if (modal) {
+            modal.hidden = false;
+          }
+          logEvent('мост');
+          logEvent('конец');
+        },
+        copyPlayLog: () => {
+          const txt = document.getElementById('play-log-text');
+          if (txt) {
+            txt.select();
+            navigator.clipboard.writeText(txt.value).then(() => {
+              alert('Журнал скопирован в буфер обмена!');
+            }).catch(() => {
+              alert('Выделите текст в окне журнала и нажмите Ctrl+C');
+            });
+          }
+        },
+        go: (id) => go(id)
+      };
+
+      // Старт
+      logEvent('вход');
+      render();
+    })();
+  </script>
+</body>
+</html>
