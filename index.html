@@ -5,7 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Судный день кожаного мешка — Сканер автозаменяемости</title>
   <style>
-    /* Базовый строгий ч/б стиль прототипа: Poka-Yoke и чистый контракт */
+    /* Стиль 3: Кибер-индустриальный HUD (Dark Factory) */
+    :root {
+      --bg: #0D1117;
+      --surface: #161B22;
+      --surface-raised: #21262D;
+      --border: #6E7681;
+      --border-active: #00E676;
+      --text: #F0F6FC;
+      --text-muted: #8B949E;
+      --accent: #00E676;
+      --on-accent: #0D1117;
+      --warning: #FF9100;
+      --danger: #FF5252;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "Space Mono", "JetBrains Mono", Consolas, monospace;
+    }
+
     [hidden] { display: none !important; }
     
     *, *::before, *::after {
@@ -15,10 +31,10 @@
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: var(--font-sans);
       line-height: 1.45;
-      color: #000;
-      background: #fff;
+      color: var(--text);
+      background: var(--bg);
       padding: 16px;
       max-width: 480px;
       margin: 0 auto;
@@ -28,21 +44,38 @@
     }
     
     header {
-      border-bottom: 2px solid #000;
+      border-bottom: 1px solid var(--border);
       padding-bottom: 12px;
       margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-family: var(--font-mono);
     }
     
     .badge {
       font-size: 11px;
       text-transform: uppercase;
       font-weight: 700;
-      border: 1px solid #000;
-      padding: 2px 6px;
-      letter-spacing: 0.5px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--accent);
+      padding: 4px 8px;
+      letter-spacing: 0.05em;
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent);
     }
     
     main {
@@ -53,18 +86,27 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     
     h1 {
       font-size: 20px;
       line-height: 1.25;
       font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
     }
     
     h2 {
       font-size: 17px;
       line-height: 1.3;
       font-weight: 700;
+      color: #FFFFFF;
     }
     
     h3 {
@@ -72,50 +114,62 @@
       line-height: 1.35;
       font-weight: 700;
       margin-top: 4px;
+      color: var(--text);
     }
     
     p {
       font-size: 14px;
-      color: #111;
+      color: var(--text-muted);
     }
     
     .instruction {
-      font-size: 13px;
-      font-style: italic;
-      color: #333;
-      background: #f4f4f4;
+      font-size: 12px;
+      color: var(--accent);
+      background: var(--surface);
       padding: 8px 12px;
-      border-left: 3px solid #000;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 3px 3px 0;
+      font-family: var(--font-mono);
     }
     
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 44px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-      background: #000;
-      border: 1px solid #000;
+      min-height: 48px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--on-accent);
+      background: var(--accent);
+      border: 1px solid var(--accent);
       cursor: pointer;
       text-decoration: none;
       text-align: center;
       width: 100%;
+      border-radius: 4px;
+      box-shadow: 0 4px 14px rgba(0, 230, 118, 0.25);
+      font-family: var(--font-sans);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    
+    .btn:active {
+      transform: translateY(1px);
     }
     
     .btn:disabled {
-      background: #eee;
-      color: #888;
-      border-color: #ccc;
+      background: var(--surface-raised);
+      color: var(--text-muted);
+      border-color: var(--border);
       cursor: not-allowed;
+      box-shadow: none;
     }
     
     .btn-secondary {
-      background: #fff;
-      color: #000;
-      border: 1px solid #000;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: none;
     }
     
     .btn-small {
@@ -128,13 +182,20 @@
     .btn-back {
       background: transparent;
       border: none;
-      font-size: 13px;
-      color: #555;
+      font-size: 12px;
+      color: var(--text-muted);
       cursor: pointer;
       padding: 4px 0;
       text-align: left;
       width: auto;
-      text-decoration: underline;
+      font-family: var(--font-mono);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-back:hover {
+      color: var(--accent);
     }
     
     .options-group {
@@ -146,119 +207,200 @@
     .opt-card {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      padding: 12px;
-      border: 1px solid #000;
-      background: #fff;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
       cursor: pointer;
       text-align: left;
       font-size: 14px;
-      line-height: 1.35;
+      line-height: 1.4;
       font-family: inherit;
       width: 100%;
       min-height: 52px;
+      border-radius: 4px;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
     }
     
     .opt-card:hover {
-      background: #f0f0f0;
+      border-color: var(--text-muted);
+      background: var(--surface-raised);
+    }
+
+    .opt-card:active {
+      transform: scale(0.99);
     }
     
     .opt-card.selected {
-      background: #000;
-      color: #fff;
+      border-color: var(--accent);
+      background: rgba(0, 230, 118, 0.08);
+      box-shadow: 0 0 10px rgba(0, 230, 118, 0.15);
     }
     
     .indicator-box {
-      border: 2px solid #000;
-      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 20px 16px;
       text-align: center;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
+      border-radius: 4px;
+      position: relative;
     }
     
     .indicator-val {
-      font-size: 38px;
-      font-weight: 900;
-      letter-spacing: -1px;
+      font-size: 56px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
     }
     
     .metrics-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
-      margin: 8px 0;
+      margin: 10px 0;
+      background: var(--surface);
+      border-radius: 4px;
+      overflow: hidden;
     }
     
     .metrics-table th, .metrics-table td {
-      border: 1px solid #000;
-      padding: 8px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
       text-align: left;
     }
     
     .metrics-table th {
-      background: #f0f0f0;
+      background: #0D1117;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
     
     .diagram-box {
-      border: 1px dashed #000;
-      padding: 12px;
-      background: #fafafa;
+      border: 1px solid var(--border);
+      padding: 14px;
+      background: #0D1117;
+      color: var(--accent);
       font-size: 12px;
-      font-family: monospace;
+      font-family: var(--font-mono);
       white-space: pre-line;
-      line-height: 1.4;
+      line-height: 1.5;
+      border-radius: 4px;
     }
     
     .toast {
-      padding: 8px 12px;
-      background: #000;
-      color: #fff;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-size: 12px;
+      font-family: var(--font-mono);
       text-align: center;
       margin-top: 8px;
+      border-radius: 3px;
     }
     
     footer {
-      border-top: 1px solid #ccc;
+      border-top: 1px solid var(--border);
       padding-top: 12px;
       margin-top: 24px;
       font-size: 11px;
-      color: #666;
+      color: var(--text-muted);
       line-height: 1.4;
+      font-family: var(--font-mono);
     }
     
     #debug {
       margin-top: 20px;
       padding: 10px;
-      background: #eee;
-      border: 1px solid #aaa;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
       font-size: 11px;
-      font-family: monospace;
+      font-family: var(--font-mono);
+      border-radius: 4px;
     }
     
     #play-kit-panel {
       margin-top: 20px;
       padding: 12px;
-      border: 1px solid #000;
-      background: #fbfbfb;
+      border: 1px solid var(--border);
+      background: var(--surface);
       font-size: 12px;
+      border-radius: 4px;
     }
     
     #play-unclear-btn {
       font-size: 11px;
-      background: #fff;
-      border: 1px solid #000;
+      background: var(--surface);
+      color: var(--warning);
+      border: 1px solid var(--warning);
       padding: 4px 8px;
       cursor: pointer;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+    }
+
+    .btn-mute {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+    }
+    .btn-mute.active {
+      color: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 6px rgba(0, 230, 118, 0.3);
+    }
+
+    .led-bar {
+      display: flex;
+      gap: 3px;
+      margin: 8px 0 12px 0;
+    }
+    .led-segment {
+      flex: 1;
+      height: 8px;
+      background: var(--surface-raised);
+      border-radius: 1px;
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .led-segment.active-lime {
+      background: var(--accent) !important;
+      box-shadow: 0 0 6px rgba(0, 230, 118, 0.4);
+    }
+    .led-segment.active-hazard {
+      background: var(--warning) !important;
+      box-shadow: 0 0 6px rgba(255, 145, 0, 0.4);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div>
+    <div style="display: flex; align-items: center; gap: 10px;">
       <span class="badge">Кибер-Сканер v1.0</span>
+      <button type="button" class="btn-mute" id="btn-sound-toggle" data-testid="sound-toggle" onclick="proto.toggleSound()">MUTE</button>
     </div>
     <div id="play-controls" hidden>
       <button type="button" id="play-unclear-btn" data-testid="play-unclear">Здесь непонятно</button>
@@ -365,9 +507,21 @@
       
       <div id="scan-results" style="display: flex; flex-direction: column; gap: 14px;">
         <div class="indicator-box">
-          <div style="font-size: 12px; text-transform: uppercase; font-weight: 700;">Индекс автозаменяемости рутины:</div>
+          <div style="font-size: 11px; text-transform: uppercase; font-family: var(--font-mono); color: var(--text-muted); letter-spacing: 0.05em;">Индекс автозаменяемости рутины:</div>
           <div class="indicator-val" id="res-auto-index">88%</div>
-          <div id="res-profile-title" style="font-size: 13px; font-weight: 700; color: #222;">Критическая перегрузка рутиной</div>
+          <div class="led-bar" id="res-led-bar">
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+            <div class="led-segment"></div>
+          </div>
+          <div id="res-profile-title" style="font-size: 13px; font-weight: 700; color: var(--text);">Критическая перегрузка рутиной</div>
         </div>
 
         <table class="metrics-table">
@@ -379,11 +533,11 @@
           <tr>
             <td>Скорость процесса</td>
             <td id="res-human-hours">~16.5 часов/нед</td>
-            <td>42 секунды</td>
+            <td style="color: var(--accent); font-weight: 700;">42 секунды</td>
           </tr>
           <tr>
             <td>Финансовые потери</td>
-            <td id="res-money-lost" colspan="2">49 500 ₽/мес недополученного дохода</td>
+            <td id="res-money-lost" colspan="2" style="color: var(--danger); font-weight: 700;">49 500 ₽/мес недополученного дохода</td>
           </tr>
         </table>
 
@@ -398,9 +552,9 @@
       <button type="button" class="btn-back" data-testid="SCR-05-back" onclick="proto.go('SCR-04')">← Назад к сканеру</button>
       <h2>Твоя персональная связка под главное узкое горло</h2>
       
-      <div style="border: 2px solid #000; padding: 14px; background: #fff;">
-        <h3 id="res-top-process" style="font-size: 15px; margin-bottom: 8px;">Автономный контент-завод на ПК (Voice DNA)</h3>
-        <p style="font-size: 13px; margin-bottom: 12px;">Архитектура движения данных, которая забирает рутину и выдает результат за 20 минут:</p>
+      <div style="border: 1px solid var(--border); padding: 14px; background: var(--surface); border-radius: 4px;">
+        <h3 id="res-top-process" style="font-size: 15px; margin-bottom: 8px; color: var(--accent);">Автономный контент-завод на ПК (Voice DNA)</h3>
+        <p style="font-size: 13px; margin-bottom: 12px; color: var(--text-muted);">Архитектура движения данных, которая забирает рутину и выдает результат за 20 минут:</p>
         
         <div class="diagram-box" id="res-diagram">
 [ВХОД]: ТЗ на неделю или аудиозапись на 3 минуты
@@ -416,7 +570,7 @@
         </div>
       </div>
 
-      <p style="font-size: 13px; color: #333;">В закрытом клубе AiTeam мы ставим эту связку тебе на компьютер за первую неделю декабря.</p>
+      <p style="font-size: 13px; color: var(--text-muted);">В закрытом клубе AiTeam мы ставим эту связку тебе на компьютер за первую неделю декабря.</p>
 
       <button type="button" class="btn" data-testid="SCR-05-bridge" onclick="proto.go('SCR-06')">
         Внедрить связку и зафиксировать цену 1 900 ₽ →
@@ -426,22 +580,22 @@
     <!-- SCR-06: Мостик в закрытый клуб AiTeam (data-terminal) -->
     <section data-screen="SCR-06" data-terminal hidden>
       <button type="button" class="btn-back" data-testid="SCR-06-back" onclick="proto.go('SCR-05')">← Назад к связке</button>
-      <h2>Вход в закрытый клуб AiTeam 🚀</h2>
+      <h2>Вход в закрытый клуб AiTeam</h2>
       
-      <div style="background: #f4f4f4; border: 1px solid #000; padding: 12px;">
-        <p style="font-size: 13px; margin-bottom: 8px;">Мы не будем продавать 40 часов лекций или учить писать промпты в браузере.</p>
-        <p style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">Что внутри клуба:</p>
-        <ul style="font-size: 13px; margin-left: 20px; line-height: 1.4;">
+      <div style="background: var(--surface); border: 1px solid var(--border); padding: 14px; border-radius: 4px;">
+        <p style="font-size: 13px; margin-bottom: 8px; color: var(--text);">Мы не будем продавать 40 часов лекций или учить писать промпты в браузере.</p>
+        <p style="font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--accent);">Что внутри клуба:</p>
+        <ul style="font-size: 13px; margin-left: 20px; line-height: 1.4; color: var(--text-muted);">
           <li>Установка суверенного воркспейса на твой ПК за первую неделю декабря;</li>
           <li>1–2 живых Zoom-разбора твоих воронок в месяц;</li>
           <li>Еженедельные мастермайнды на 4-5 человек и закрытый чат практиков.</li>
         </ul>
       </div>
 
-      <div style="border: 2px solid #000; padding: 12px; text-align: center;">
-        <div style="font-size: 12px; color: #777; text-decoration: line-through;">Стандартная цена: 3 900 ₽/мес</div>
-        <div style="font-size: 20px; font-weight: 800; margin: 4px 0;">Твоя клубная цена: 1 900 ₽/мес</div>
-        <div style="font-size: 11px; color: #333;">Фиксация навсегда при сохранении подписки. Старт: 1 декабря 2026.</div>
+      <div style="border: 1px solid var(--border); padding: 14px; text-align: center; background: var(--surface); border-radius: 4px;">
+        <div style="font-size: 12px; color: var(--text-muted); text-decoration: line-through;">Стандартная цена: 3 900 ₽/мес</div>
+        <div style="font-size: 22px; font-weight: 800; margin: 4px 0; color: var(--accent); font-family: var(--font-mono);">Твоя клубная цена: 1 900 ₽/мес</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Фиксация навсегда при сохранении подписки. Старт: 1 декабря 2026.</div>
       </div>
 
       <button type="button" class="btn" data-testid="SCR-06-cta" onclick="proto.submitCta()">
@@ -800,6 +954,20 @@
               moneyEl.innerText = `${formattedMoney} ₽/мес слитого ФОТ на рутину`;
             }
           }
+
+          // Отрисовка 10 сегментов LED-шкалы
+          const bar = document.getElementById('res-led-bar');
+          if (bar) {
+            const segments = bar.querySelectorAll('.led-segment');
+            const activeCount = Math.round((res.shown / 100) * segments.length);
+            segments.forEach((seg, i) => {
+              seg.className = 'led-segment';
+              if (i < activeCount) {
+                if (i >= 7) seg.classList.add('active-hazard');
+                else seg.classList.add('active-lime');
+              }
+            });
+          }
         }
 
         // Если экран SCR-05, показать персональный артефакт
@@ -869,6 +1037,15 @@
         state: () => JSON.parse(JSON.stringify(S)),
         log: () => [...S.log],
         goto: (id) => go(id),
+        toggleSound: () => {
+          S.sound = !S.sound;
+          const btn = document.getElementById('btn-sound-toggle');
+          if (btn) {
+            btn.innerText = S.sound ? 'AUDIO: ON' : 'MUTE';
+            btn.classList.toggle('active', S.sound);
+          }
+          logEvent('звук: ' + (S.sound ? 'on' : 'mute'));
+        },
         set: (k, v) => {
           S.vars[k] = v;
           logEvent(`ввод: ${k}=${v}`);
